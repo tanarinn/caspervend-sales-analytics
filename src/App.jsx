@@ -17,6 +17,7 @@ import ParetoAnalysis from './components/panels/ParetoAnalysis'
 import ProductLifecycle from './components/panels/ProductLifecycle'
 import ProductPortfolio from './components/panels/ProductPortfolio'
 import DemoEffect from './components/panels/DemoEffect'
+import SalesDiagnosis from './components/panels/SalesDiagnosis'
 import { applyFilters, getAvailableYears } from './utils/dataHelpers'
 
 // デフォルトフィルター設定
@@ -36,7 +37,7 @@ export default function App() {
     const [filters, setFilters] = useState(DEFAULT_FILTERS)
 
     // アクティブパネル
-    const [activePanel, setActivePanel] = useState('yearly')
+    const [activePanel, setActivePanel] = useState('diagnosis')
 
     // CSV読み込みコールバック
     const handleDataLoaded = useCallback((rows, name) => {
@@ -74,6 +75,7 @@ export default function App() {
 
         const props = { rows: allRows, filters }
         switch (activePanel) {
+            case 'diagnosis': return <SalesDiagnosis {...props} />
             case 'yearly': return <YearlySales {...props} />
             case 'monthly': return <MonthlySales {...props} />
             case 'ranking': return <ProductRanking {...props} />

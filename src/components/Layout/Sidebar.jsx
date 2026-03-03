@@ -7,6 +7,7 @@ const NAV_ITEMS = [
     {
         group: '状況把握',
         items: [
+            { id: 'diagnosis', label: '売上診断', icon: '📊' },
             { id: 'yearly', label: '年別売上', icon: '📅' },
             { id: 'monthly', label: '月別売上', icon: '📆' },
             { id: 'ranking', label: '商品ランキング', icon: '🏆' },

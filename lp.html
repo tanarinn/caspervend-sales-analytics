@@ -629,6 +629,85 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+
+        /* ─── FAQ ─── */
+        .faq {
+            background: var(--bg);
+        }
+
+        .faq-list {
+            max-width: 740px;
+            margin: 3rem auto 0;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .faq-item:first-child {
+            border-top: 1px solid var(--border);
+        }
+
+        .faq-q {
+            width: 100%;
+            background: none;
+            border: none;
+            text-align: left;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 1.1rem 0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            line-height: 1.5;
+        }
+
+        .faq-q:hover {
+            color: #a5b4fc;
+        }
+
+        .faq-icon {
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: #a5b4fc;
+            transition: transform 0.25s, background 0.2s;
+        }
+
+        .faq-item.open .faq-icon {
+            transform: rotate(45deg);
+            background: rgba(99, 102, 241, 0.3);
+        }
+
+        .faq-body {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.35s ease, padding 0.25s ease;
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.75;
+        }
+
+        .faq-body-inner {
+            padding-bottom: 1.1rem;
+        }
+
+        .faq-body a {
+            color: #a5b4fc;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
     </style>
 </head>
 
@@ -636,7 +715,7 @@
 
     <!-- ナビ -->
     <nav>
-        <div class="nav-logo">CasperVend <span>Analytics</span></div>
+        <div class="nav-logo">Creators <span>Analytics</span></div>
         <a href="https://c-sales-analytics.netlify.app/" class="nav-cta">▶ アプリを開く</a>
     </nav>
 
@@ -652,7 +731,7 @@
             10種類以上のビジュアル分析が即座に立ち上がります。
         </p>
         <div class="hero-btns fade-up delay-2">
-            <a href="https://c-sales-analytics.netlify.app/" class="btn-primary">▶ 無料で試す</a>
+            <a href="https://c-sales-analytics.netlify.app/" class="btn-primary">▶ 分析を始める</a>
             <a href="#features" class="btn-secondary">機能を見る ↓</a>
         </div>
 
@@ -823,10 +902,10 @@
                     <div class="feature-badge badge-new">NEW</div>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-emoji">🧪</div>
-                    <div class="feature-name">DEMO効果分析</div>
-                    <div class="feature-desc">DEMOあり/なし商品の平均売上・回転数比較。Marketplace絞り込みに対応。</div>
-                    <div class="feature-badge badge-beta">β</div>
+                    <div class="feature-emoji">📊</div>
+                    <div class="feature-name">売上診断</div>
+                    <div class="feature-desc">6つの指標を組み合わせてクリエイタータイプを自動診断。強み・課題・行動提案を提示。</div>
+                    <div class="feature-badge badge-new">NEW</div>
                 </div>
                 <div class="feature-card">
                     <div class="feature-emoji">📤</div>
@@ -862,6 +941,91 @@
         </div>
     </section>
 
+    <!-- FAQ -->
+    <section class="faq">
+        <div class="container">
+            <div class="section-badge">💬 よくある質問</div>
+            <h2 class="section-title">FAQ</h2>
+            <div class="faq-list">
+
+                <div class="faq-item">
+                    <button class="faq-q">
+                        <span>どんなデータを分析できますか？</span>
+                        <span class="faq-icon">＋</span>
+                    </button>
+                    <div class="faq-body">
+                        <div class="faq-body-inner">
+                            CasperVendからエクスポートした売上CSVファイルを分析します。アカウント情報や個人情報へのアクセスは一切ありません。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-q">
+                        <span>アップロードしたCSVはサーバーに保存されますか？</span>
+                        <span class="faq-icon">＋</span>
+                    </button>
+                    <div class="faq-body">
+                        <div class="faq-body-inner">
+                            保存されません。ファイルはお使いのブラウザのメモリ内だけで処理され、外部サーバーへ送信されることも、永続的に保存されることもありません。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-q">
+                        <span>このツールを使えば売上が上がりますか？</span>
+                        <span class="faq-icon">＋</span>
+                    </button>
+                    <div class="faq-body">
+                        <div class="faq-body-inner">
+                            売上の向上を保証するものではありません。このツールは過去のデータを整理・可視化する分析ツールです。市場の動向はさまざまな外部要因によって変動します。データをヒントに、戦略を練るためにお役立てください。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-q">
+                        <span>CasperVendやLinden Labと提携していますか？</span>
+                        <span class="faq-icon">＋</span>
+                    </button>
+                    <div class="faq-body">
+                        <div class="faq-body-inner">
+                            いいえ、無関係です。このツールはSLクリエイターのzinbeeが個人で開発した独立プロジェクトであり、CasperVend・Linden Lab両社とは一切提携していません。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-q">
+                        <span>なぜこのツールを作ったのですか？</span>
+                        <span class="faq-icon">＋</span>
+                    </button>
+                    <div class="faq-body">
+                        <div class="faq-body-inner">
+                            SLクリエイターとして長年活動する中で、「自分の売上構造やロングテールの状況をシンプルに把握したい」という思いがありました。CasperVendにもグラフや統計の表示機能はありますが、「そのデータから何を読み取るべきか」を分かりやすく示すために、このツールを開発しました。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-q">
+                        <span>作成者について</span>
+                        <span class="faq-icon">＋</span>
+                    </button>
+                    <div class="faq-body">
+                        <div class="faq-body-inner">
+                            TONKATIHEADのデザイナー zinbee が制作しました。<br />
+                            作品は <a href="https://marketplace.secondlife.com/stores/227971" target="_blank"
+                                rel="noopener">Second Life Marketplace</a> でご覧いただけます。
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
     <!-- CTA -->
     <section class="cta-section">
         <div class="container">
@@ -874,10 +1038,34 @@
         </div>
     </section>
 
+    <!-- FAQ アコーディオン -->
+    <script>
+        document.querySelectorAll('.faq-q').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const item = btn.closest('.faq-item')
+                const body = item.querySelector('.faq-body')
+                const isOpen = item.classList.contains('open')
+                // 他を閉じる
+                document.querySelectorAll('.faq-item.open').forEach((el) => {
+                    el.classList.remove('open')
+                    el.querySelector('.faq-body').style.maxHeight = '0'
+                })
+                if (!isOpen) {
+                    item.classList.add('open')
+                    body.style.maxHeight = body.scrollHeight + 'px'
+                }
+            })
+        })
+    </script>
+
     <!-- フッター -->
     <footer>
         <p>CasperVend 売上分析ツール — Second Life クリエイター向け販売データ可視化</p>
         <p style="margin-top:0.4rem;font-size:0.72rem">このツールはCasper Tech製品の公式ソフトウェアではありません。</p>
+        <p
+            style="margin-top:1.25rem;font-size:0.68rem;color:#4b5468;line-height:1.7;max-width:560px;margin-left:auto;margin-right:auto;">
+            【免責事項】本ツールは分析結果を提供するものであり、売上の向上を保証するものではありません。本ツールの利用によるいかなる損失についても責任を負いません。
+        </p>
     </footer>
 
 </body>

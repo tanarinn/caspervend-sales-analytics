@@ -626,3 +626,201 @@ export function buildPortfolioData(rows) {
         }
     }).sort((a, b) => b.gross - a.gross)
 }
+
+/**
+ * 売上診断データ生成
+ * 複数の指標を組み合わせてクリエイタータイプを判定し、行動提案を返す
+ * @param {Array} rows - 全トランザクション（applyFilters適用済み）
+ * @returns {Object|null} 診断結果
+ */
+export function buildDiagnosisData(rows) {
+    if (!rows?.length) return null
+
+    const now = new Date()
+    const recentYM = (n) => {
+        const d = new Date(now)
+        d.setMonth(d.getMonth() - n)
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    }
+    const ym12ago = recentYM(12)
+    const ym6ago = recentYM(6)
+    const ym3ago = recentYM(3)
+
+    // ─── 基本集計 ───
+    let totalGross = 0, mpGross = 0, paidCount = 0
+    const productGross = {}
+    const monthlyGross = {}
+    const activeProducts12m = new Set()
+
+    for (const r of rows) {
+        if (!r.isPaid) continue
+        totalGross += r.gross
+        paidCount += 1
+        if (r.location === 'SL Marketplace') mpGross += r.gross
+        productGross[r.productName] = (productGross[r.productName] || 0) + r.gross
+        monthlyGross[r.yearMonth] = (monthlyGross[r.yearMonth] || 0) + r.gross
+        if (r.yearMonth >= ym12ago) activeProducts12m.add(r.productName)
+    }
+
+    if (totalGross === 0) return null
+
+    // ─── 指標計算 ───
+    const marketplacePct = (mpGross / totalGross) * 100
+
+    const sortedProducts = Object.entries(productGross).sort((a, b) => b[1] - a[1])
+    const top3Gross = sortedProducts.slice(0, 3).reduce((s, [, g]) => s + g, 0)
+    const top3Pct = (top3Gross / totalGross) * 100
+
+    const activeCount = activeProducts12m.size
+
+    const ymSorted = Object.keys(monthlyGross).sort()
+    const recent3 = ymSorted.filter((ym) => ym >= ym3ago)
+    const prev3 = ymSorted.filter((ym) => ym >= ym6ago && ym < ym3ago)
+    const recent3Avg = recent3.length > 0 ? recent3.reduce((s, ym) => s + monthlyGross[ym], 0) / recent3.length : 0
+    const prev3Avg = prev3.length > 0 ? prev3.reduce((s, ym) => s + monthlyGross[ym], 0) / prev3.length : 0
+    const trendPct = prev3Avg > 0 ? ((recent3Avg / prev3Avg) - 1) * 100 : 0
+
+    const avgUnitPrice = paidCount > 0 ? totalGross / paidCount : 0
+
+    const top20n = Math.max(1, Math.ceil(sortedProducts.length * 0.2))
+    const top20Gross = sortedProducts.slice(0, top20n).reduce((s, [, g]) => s + g, 0)
+    const longTailPct = 100 - (top20Gross / totalGross) * 100
+
+    // ─── 診断タイプ定義（優先度順） ───
+    const TYPES = [
+        {
+            id: 'MP_CONCENTRATED',
+            icon: '🛒',
+            label: 'Marketplace集中型',
+            color: '#ec4899',
+            cond: () => marketplacePct > 65 && top3Pct > 65,
+            summary: 'SL Marketplaceの特定商品に売上が集中しています。プラットフォームリスクとヒットリスクが重なっており、最も不安定な構成です。',
+            strengths: ['Marketplaceの検索トラフィックを最大限活用できている', '人気商品の集客力が高い'],
+            challenges: ['検索アルゴリズム変動で売上が急変するリスク', '主力商品の陳腐化・競合出現で大きなダメージを受ける'],
+            actions: [
+                '🏪 インワールドにCasperVendショップを開設し、Marketplace以外の販売導線を作る',
+                '🎨 主力商品の系列・バリエーションを追加してヒット依存から脱却する',
+                '📣 SLのイベント・グループに参加し、Marketplaceに頼らない集客を試みる',
+            ],
+        },
+        {
+            id: 'MP_DEPENDENT',
+            icon: '🔗',
+            label: 'Marketplace依存型',
+            color: '#f59e0b',
+            cond: () => marketplacePct > 65,
+            summary: '売上の大部分がSL Marketplaceに集中しています。商品は分散していますが、チャネルリスクが高い状態です。',
+            strengths: ['Marketplaceの検索トラフィックを効率よく獲得できている', '商品ラインナップは比較的充実'],
+            challenges: ['Marketplaceの検索順位・アルゴリズム変動に売上が左右される', 'インワールド販路が弱い'],
+            actions: [
+                '🏠 インワールドショップの開設・強化で販売チャネルを多様化する',
+                '📍 主要インワールド拠点への出店を検討する',
+                '🎪 クリエイターイベント参加で認知度をMarketplace以外にも広げる',
+            ],
+        },
+        {
+            id: 'HIT_DEPENDENT',
+            icon: '🎯',
+            label: 'ヒット依存型',
+            color: '#8b5cf6',
+            cond: () => top3Pct > 70,
+            summary: `上位3商品が全売上の${top3Pct.toFixed(0)}%を占めています。ヒット商品への依存が高く、次の主力候補の育成が課題です。`,
+            strengths: ['主力商品の品質・人気が突出して高い', '大きなヒットを生み出せている'],
+            challenges: ['主力商品の廃版・競合出現リスクで大幅な売上減の可能性', '新商品の育成が追いついていない'],
+            actions: [
+                '🛠️ 主力商品のアップデート・新バージョンをリリースし寿命を延ばす',
+                '🌱 月1回のペースで新商品をリリースし「次のヒット」を育てる',
+                '📦 主力商品のカラバリ・サイズ展開でラインナップを拡充する',
+            ],
+        },
+        {
+            id: 'GROWING',
+            icon: '🚀',
+            label: '急成長型',
+            color: '#10b981',
+            cond: () => trendPct > 25,
+            summary: `直近3ヶ月の売上が前の3ヶ月比で+${trendPct.toFixed(0)}%と好調です。この勢いを持続させる戦略が重要です。`,
+            strengths: ['売上トレンドが明確な上昇局面', '新商品や施策が市場に刺さっている'],
+            challenges: ['急成長は一時的なブーストの可能性', '成長を維持するためのコンテンツ供給が必要'],
+            actions: [
+                '⚡ 人気商品に関連する新作を素早くリリースしてモメンタムを活かす',
+                '📣 好調なうちにSNS告知・イベント参加で認知を拡大する',
+                '📊 どのチャネル・商品が成長の主因か分析し、その施策に集中投資する',
+            ],
+        },
+        {
+            id: 'DECLINING',
+            icon: '🔄',
+            label: '転換期型',
+            color: '#64748b',
+            cond: () => trendPct < -20,
+            summary: `直近3ヶ月の売上が前の3ヶ月比で-${Math.abs(trendPct).toFixed(0)}%となっています。商品・販路の見直しが必要な局面です。`,
+            strengths: ['過去に実績のある商品・販路がある', '改善の伸びしろが大きい'],
+            challenges: ['売上の下降トレンドが続いている', '主力商品の陳腐化や市場ニーズの変化の可能性'],
+            actions: [
+                '🔍 売上減少の原因（商品の古さ・競合出現・季節性）を各パネルで分析する',
+                '🎨 既存の人気商品をリニューアル・アップデートして再注目を集める',
+                '🆕 新カテゴリー・新ジャンルへのチャレンジで売上の軸を新たに作る',
+            ],
+        },
+        {
+            id: 'STABLE_DIVERSIFIED',
+            icon: '🏛️',
+            label: '安定分散型',
+            color: '#3b82f6',
+            cond: () => marketplacePct < 50 && top3Pct < 60 && activeCount >= 8,
+            summary: '複数のチャネルと商品群に売上が分散しており、リスクの低い安定した構成です。',
+            strengths: ['特定チャネル・商品への依存が低く外部変動に強い', '複数の収益源が安定基盤を作っている'],
+            challenges: ['際立ったヒットが生まれにくい', '注力点が分散して成長の加速がしにくい'],
+            actions: [
+                '💡 ロングテール商品の中から成長候補を選び、マーケティングを集中投下する',
+                '📈 最も伸びているチャネルに積極的に新作を投入する',
+                '🔍 商品ポートフォリオを整理し、A型（基盤）商品の比率をさらに高める',
+            ],
+        },
+        {
+            id: 'SMALL_CONCENTRATED',
+            icon: '💎',
+            label: '少数精鋭型',
+            color: '#06b6d4',
+            cond: () => activeCount <= 5,
+            summary: `アクティブ商品が${activeCount}点と少数ですが、各商品の存在感が高い状態です。`,
+            strengths: ['各商品に集中してクオリティを高められる', '管理が容易でリリースサイクルが明確'],
+            challenges: ['商品数が少なく売上の変動リスクが高い', '主力商品のライフサイクル終了リスクが顕著'],
+            actions: [
+                '🌱 年間2〜4点の新商品リリースを目標に品揃えを徐々に増やす',
+                '🎨 既存商品のバリエーション展開で商品ラインを拡充する',
+                '📦 過去ヒット商品のリメイク・新バージョンで長期収益を確保する',
+            ],
+        },
+        {
+            id: 'BALANCED',
+            icon: '⚖️',
+            label: 'バランス型',
+            color: '#6366f1',
+            cond: () => true,
+            summary: '複数の指標が中庸な状態です。各軸を少しずつ強化することで全体的な向上が見込めます。',
+            strengths: ['特定の弱点が突出していない', '改善の方向性を自分で選択できる余地がある'],
+            challenges: ['際立った強みを作りにくい', 'まず注力すべき課題を絞り込む必要がある'],
+            actions: [
+                '📊 Marketplace依存率・ヒット集中度のうちリスクが高い方から改善に着手する',
+                '🆕 月1本のペースで新商品をリリースし、売上の幅を広げる',
+                '📣 SNS・イベント告知でインワールドの認知を高め、チャネルを多様化する',
+            ],
+        },
+    ]
+
+    const primaryType = TYPES.find((t) => t.cond())
+    const subTypes = TYPES.filter((t) => t.id !== primaryType.id && t.id !== 'BALANCED' && t.cond()).slice(0, 2)
+
+    return {
+        scores: { marketplacePct, top3Pct, longTailPct, trendPct, activeCount, avgUnitPrice },
+        primaryType,
+        subTypes,
+        totalGross,
+        paidCount,
+        sortedProducts: sortedProducts.slice(0, 5).map(([name, gross]) => ({
+            name, gross, pct: (gross / totalGross) * 100,
+        })),
+    }
+}
