@@ -18,6 +18,8 @@ import ProductLifecycle from './components/panels/ProductLifecycle'
 import ProductPortfolio from './components/panels/ProductPortfolio'
 import DemoEffect from './components/panels/DemoEffect'
 import SalesDiagnosis from './components/panels/SalesDiagnosis'
+import { LanguageProvider, useLang } from './i18n/LanguageContext'
+import strings from './i18n/strings'
 import { applyFilters, getAvailableYears } from './utils/dataHelpers'
 
 // デフォルトフィルター設定
@@ -28,7 +30,13 @@ const DEFAULT_FILTERS = {
     excludeDemo: true,
 }
 
-export default function App() {
+function AppInner() {
+    const { lang } = useLang()
+    const t = (key) => {
+        const v = strings[lang]?.[key] ?? strings['ja']?.[key]
+        return v ?? key
+    }
+
     // CSVデータ
     const [allRows, setAllRows] = useState([])
     const [fileName, setFileName] = useState('')
@@ -66,14 +74,14 @@ export default function App() {
             return (
                 <div className="empty-state">
                     <div className="empty-state-icon">📂</div>
-                    <h3>CSVファイルを読み込んでください</h3>
-                    <p>右上の「CSVをドロップ／選択」からファイルをアップロードすると<br />分析が開始されます。</p>
-                    <p style={{ marginTop: '0.5rem', fontSize: '0.78rem', color: 'var(--text-muted)' }}>対応ファイル：UTF-8 / Shift-JIS の CasperVend 売上CSVエクスポート</p>
+                    <h3>{t('emptyTitle')}</h3>
+                    <p>{t('emptyDesc')}</p>
+                    <p style={{ marginTop: '0.5rem', fontSize: '0.78rem', color: 'var(--text-muted)' }}>{t('emptyNote')}</p>
                 </div>
             )
         }
 
-        const props = { rows: allRows, filters }
+        const props = { rows: allRows, filters, lang }
         switch (activePanel) {
             case 'diagnosis': return <SalesDiagnosis {...props} />
             case 'yearly': return <YearlySales {...props} />
@@ -121,5 +129,13 @@ export default function App() {
                 </div>
             </main>
         </div>
+    )
+}
+
+export default function App() {
+    return (
+        <LanguageProvider>
+            <AppInner />
+        </LanguageProvider>
     )
 }

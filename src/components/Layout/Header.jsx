@@ -1,20 +1,24 @@
 /**
  * ヘッダーコンポーネント
- * CSVファイルの読み込みエリアとアプリロゴを表示する
+ * CSVファイルの読み込みエリア・アプリロゴ・言語切り替えボタンを表示する
  */
 import { useRef, useState, useCallback } from 'react'
 import { parseCSV } from '../../utils/csvParser'
+import { useLang } from '../../i18n/LanguageContext'
+import strings from '../../i18n/strings'
 
 export default function Header({ onDataLoaded, fileName, rowCount }) {
     const fileInputRef = useRef(null)
     const [isDragging, setIsDragging] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [errorMsg, setErrorMsg] = useState('')
+    const { lang, toggle } = useLang()
+    const t = (key) => strings[lang]?.[key] ?? strings['ja']?.[key] ?? key
 
     // ファイル処理の共通関数
     const handleFile = useCallback(async (file) => {
         if (!file || !file.name.endsWith('.csv')) {
-            setErrorMsg('CSVファイルを選択してください')
+            setErrorMsg(t('errorCsvOnly'))
             return
         }
         setIsLoading(true)
@@ -23,11 +27,11 @@ export default function Header({ onDataLoaded, fileName, rowCount }) {
             const result = await parseCSV(file)
             onDataLoaded(result.data, file.name)
         } catch (err) {
-            setErrorMsg(`読み込みエラー: ${err.message}`)
+            setErrorMsg(`${t('errorPrefix')}${err.message}`)
         } finally {
             setIsLoading(false)
         }
-    }, [onDataLoaded])
+    }, [onDataLoaded, lang])
 
     // ドラッグ&ドロップハンドラー
     const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true) }
@@ -44,7 +48,7 @@ export default function Header({ onDataLoaded, fileName, rowCount }) {
             {/* ロゴ */}
             <div className="header-logo">
                 <div className="header-logo-icon">📦</div>
-                <span>CasperVend 売上分析</span>
+                <span>{t('appTitle')}</span>
             </div>
 
             {/* ファイル読み込みエリア */}
@@ -59,7 +63,7 @@ export default function Header({ onDataLoaded, fileName, rowCount }) {
                     <div className="file-badge">
                         ✓ {fileName}
                         <span style={{ fontWeight: 400, color: 'var(--accent-green)', opacity: 0.8 }}>
-                            {rowCount?.toLocaleString('ja-JP')} 件
+                            {strings[lang]?.rowCount?.(rowCount) ?? `${rowCount} 件`}
                         </span>
                     </div>
                 )}
@@ -78,11 +82,34 @@ export default function Header({ onDataLoaded, fileName, rowCount }) {
                         onChange={(e) => handleFile(e.target.files[0])}
                     />
                     {isLoading ? (
-                        <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />読み込み中...</>
+                        <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />{t('loading')}</>
                     ) : (
-                        <>{fileName ? '📂 CSVを変更' : '📂 CSVをドロップ／選択'}</>
+                        <>{fileName ? t('changeCsv') : t('dropCsv')}</>
                     )}
                 </label>
+
+                {/* 言語切り替えボタン */}
+                <button
+                    onClick={toggle}
+                    title={lang === 'ja' ? 'Switch to English' : '日本語に切り替え'}
+                    style={{
+                        background: 'rgba(255,255,255,0.08)',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        borderRadius: 6,
+                        color: 'var(--text-secondary)',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        padding: '0.3rem 0.65rem',
+                        cursor: 'pointer',
+                        letterSpacing: '0.05em',
+                        transition: 'background 0.15s',
+                        flexShrink: 0,
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.14)'}
+                    onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                >
+                    {t('langToggle')}
+                </button>
             </div>
         </header>
     )

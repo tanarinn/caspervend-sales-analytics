@@ -1,33 +1,37 @@
 /**
  * サイドバーナビゲーションコンポーネント
  */
-
-// ナビゲーション項目定義
-const NAV_ITEMS = [
-    {
-        group: '状況把握',
-        items: [
-            { id: 'diagnosis', label: '売上診断', icon: '📊' },
-            { id: 'yearly', label: '年別売上', icon: '📅' },
-            { id: 'monthly', label: '月別売上', icon: '📆' },
-            { id: 'ranking', label: '商品ランキング', icon: '🏆' },
-        ],
-    },
-    {
-        group: '戦略分析',
-        items: [
-            { id: 'pricezone', label: '価格帯ゾーン', icon: '💰' },
-            { id: 'longtail', label: 'ロングテール', icon: '📉' },
-            { id: 'channel', label: 'Marketplace依存率', icon: '🔗' },
-            { id: 'pareto', label: 'パレート分析', icon: '📊' },
-            { id: 'lifecycle', label: '商品寿命', icon: '⏳' },
-            { id: 'portfolio', label: '商品ポートフォリオ', icon: '🗂' },
-            { id: 'demo-effect', label: 'DEMO効果分析（β）', icon: '🧪' },
-        ],
-    },
-]
+import { useLang } from '../../i18n/LanguageContext'
+import strings from '../../i18n/strings'
 
 export default function Sidebar({ activePanel, onSelect }) {
+    const { lang } = useLang()
+    const t = (key) => strings[lang]?.[key] ?? strings['ja']?.[key] ?? key
+
+    const NAV_ITEMS = [
+        {
+            group: t('groupStatus'),
+            items: [
+                { id: 'diagnosis', label: t('navDiagnosis'), icon: '📊' },
+                { id: 'yearly', label: t('navYearly'), icon: '📅' },
+                { id: 'monthly', label: t('navMonthly'), icon: '📆' },
+                { id: 'ranking', label: t('navRanking'), icon: '🏆' },
+            ],
+        },
+        {
+            group: t('groupStrategy'),
+            items: [
+                { id: 'pricezone', label: t('navPricezone'), icon: '💰' },
+                { id: 'longtail', label: t('navLongtail'), icon: '📉' },
+                { id: 'channel', label: t('navChannel'), icon: '🔗' },
+                { id: 'pareto', label: t('navPareto'), icon: '📊' },
+                { id: 'lifecycle', label: t('navLifecycle'), icon: '⏳' },
+                { id: 'portfolio', label: t('navPortfolio'), icon: '🗂' },
+                { id: 'demo-effect', label: t('navDemoEffect'), icon: '🧪' },
+            ],
+        },
+    ]
+
     return (
         <aside className="app-sidebar">
             {NAV_ITEMS.map((group) => (

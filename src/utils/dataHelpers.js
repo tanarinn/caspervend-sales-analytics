@@ -686,127 +686,255 @@ export function buildDiagnosisData(rows) {
     const top20Gross = sortedProducts.slice(0, top20n).reduce((s, [, g]) => s + g, 0)
     const longTailPct = 100 - (top20Gross / totalGross) * 100
 
-    // ─── 診断タイプ定義（優先度順） ───
+    // ─── 診断タイプ定義（優先度順） 各テキストはja/en両言語を持つ ───
     const TYPES = [
         {
             id: 'MP_CONCENTRATED',
             icon: '🛒',
-            label: 'Marketplace集中型',
+            label: { ja: 'Marketplace集中型', en: 'Marketplace-Locked' },
             color: '#ec4899',
             cond: () => marketplacePct > 65 && top3Pct > 65,
-            summary: 'SL Marketplaceの特定商品に売上が集中しています。プラットフォームリスクとヒットリスクが重なっており、最も不安定な構成です。',
-            strengths: ['Marketplaceの検索トラフィックを最大限活用できている', '人気商品の集客力が高い'],
-            challenges: ['検索アルゴリズム変動で売上が急変するリスク', '主力商品の陳腐化・競合出現で大きなダメージを受ける'],
-            actions: [
-                '🏪 インワールドにCasperVendショップを開設し、Marketplace以外の販売導線を作る',
-                '🎨 主力商品の系列・バリエーションを追加してヒット依存から脱却する',
-                '📣 SLのイベント・グループに参加し、Marketplaceに頼らない集客を試みる',
-            ],
+            summary: {
+                ja: 'SL Marketplaceの特定商品に売上が集中しています。プラットフォームリスクとヒットリスクが重なっており、最も不安定な構成です。',
+                en: 'Your sales are heavily concentrated on a few products sold through SL Marketplace. This double dependency — on one platform and one hit — makes your revenue fragile and hard to predict.',
+            },
+            strengths: {
+                ja: ['Marketplaceの検索トラフィックを最大限活用できている', '人気商品の集客力が高い'],
+                en: ['Strong organic reach through Marketplace search', 'Your top products clearly resonate with buyers'],
+            },
+            challenges: {
+                ja: ['検索アルゴリズム変動で売上が急変するリスク', '主力商品の陳腐化・競合出現で大きなダメージを受ける'],
+                en: ['A Marketplace algorithm change can wipe out your income overnight', 'If your top product gets outdated or copied, there\'s nothing to fall back on'],
+            },
+            actions: {
+                ja: [
+                    '🏪 インワールドにCasperVendショップを開設し、Marketplace以外の販売導線を作る',
+                    '🎨 主力商品の系列・バリエーションを追加してヒット依存から脱却する',
+                    '📣 SLのイベント・グループに参加し、Marketplaceに頼らない集客を試みる',
+                ],
+                en: [
+                    '🏪 Set up a CasperVend in-world store to build a sales channel that isn\'t Marketplace-dependent',
+                    '🎨 Create variations or sequels of your top products to spread the risk across more items',
+                    '📣 Join SL events and creator groups to attract customers outside of Marketplace search',
+                ],
+            },
         },
         {
             id: 'MP_DEPENDENT',
             icon: '🔗',
-            label: 'Marketplace依存型',
+            label: { ja: 'Marketplace依存型', en: 'Marketplace-Reliant' },
             color: '#f59e0b',
             cond: () => marketplacePct > 65,
-            summary: '売上の大部分がSL Marketplaceに集中しています。商品は分散していますが、チャネルリスクが高い状態です。',
-            strengths: ['Marketplaceの検索トラフィックを効率よく獲得できている', '商品ラインナップは比較的充実'],
-            challenges: ['Marketplaceの検索順位・アルゴリズム変動に売上が左右される', 'インワールド販路が弱い'],
-            actions: [
-                '🏠 インワールドショップの開設・強化で販売チャネルを多様化する',
-                '📍 主要インワールド拠点への出店を検討する',
-                '🎪 クリエイターイベント参加で認知度をMarketplace以外にも広げる',
-            ],
+            summary: {
+                ja: '売上の大部分がSL Marketplaceに集中しています。商品は分散していますが、チャネルリスクが高い状態です。',
+                en: 'Most of your sales come through SL Marketplace. Your product range looks healthy, but you\'re putting all your eggs in one platform basket.',
+            },
+            strengths: {
+                ja: ['Marketplaceの検索トラフィックを効率よく獲得できている', '商品ラインナップは比較的充実'],
+                en: ['You\'re capturing Marketplace search traffic efficiently', 'You have a healthy variety of products to offer'],
+            },
+            challenges: {
+                ja: ['Marketplaceの検索順位・アルゴリズム変動に売上が左右される', 'インワールド販路が弱い'],
+                en: ['Search ranking changes can significantly impact your income', 'Your in-world footprint is small, limiting your reach to walk-in buyers'],
+            },
+            actions: {
+                ja: [
+                    '🏠 インワールドショップの開設・強化で販売チャネルを多様化する',
+                    '📍 主要インワールド拠点への出店を検討する',
+                    '🎪 クリエイターイベント参加で認知度をMarketplace以外にも広げる',
+                ],
+                en: [
+                    '🏠 Open or expand an in-world shop to diversify your sales channels',
+                    '📍 Look into setting up at popular in-world shopping hubs',
+                    '🎪 Participate in creator events to get discovered outside of Marketplace',
+                ],
+            },
         },
         {
             id: 'HIT_DEPENDENT',
             icon: '🎯',
-            label: 'ヒット依存型',
+            label: { ja: 'ヒット依存型', en: 'Hit-Dependent' },
             color: '#8b5cf6',
             cond: () => top3Pct > 70,
-            summary: `上位3商品が全売上の${top3Pct.toFixed(0)}%を占めています。ヒット商品への依存が高く、次の主力候補の育成が課題です。`,
-            strengths: ['主力商品の品質・人気が突出して高い', '大きなヒットを生み出せている'],
-            challenges: ['主力商品の廃版・競合出現リスクで大幅な売上減の可能性', '新商品の育成が追いついていない'],
-            actions: [
-                '🛠️ 主力商品のアップデート・新バージョンをリリースし寿命を延ばす',
-                '🌱 月1回のペースで新商品をリリースし「次のヒット」を育てる',
-                '📦 主力商品のカラバリ・サイズ展開でラインナップを拡充する',
-            ],
+            summary: {
+                ja: `上位3商品が全売上の${top3Pct.toFixed(0)}%を占めています。ヒット商品への依存が高く、次の主力候補の育成が課題です。`,
+                en: `Your top 3 products account for ${top3Pct.toFixed(0)}% of total sales. You've clearly got a winner, but your business is exposed if that hit product fades or gets undercut.`,
+            },
+            strengths: {
+                ja: ['主力商品の品質・人気が突出して高い', '大きなヒットを生み出せている'],
+                en: ['You\'ve proven you can create genuinely popular products', 'Your flagship items have strong pulling power'],
+            },
+            challenges: {
+                ja: ['主力商品の廃版・競合出現リスクで大幅な売上減の可能性', '新商品の育成が追いついていない'],
+                en: ['If your top product becomes outdated or attracts copycats, revenue could drop sharply', 'Your pipeline of follow-up products needs attention'],
+            },
+            actions: {
+                ja: [
+                    '🛠️ 主力商品のアップデート・新バージョンをリリースし寿命を延ばす',
+                    '🌱 月1回のペースで新商品をリリースし「次のヒット」を育てる',
+                    '📦 主力商品のカラバリ・サイズ展開でラインナップを拡充する',
+                ],
+                en: [
+                    '🛠️ Update or release a new version of your top product to keep it fresh and competitive',
+                    '🌱 Aim to release a new product roughly once a month to develop your next big hit',
+                    '📦 Expand your flagship with color variants or add-ons to spread revenue across more listings',
+                ],
+            },
         },
         {
             id: 'GROWING',
             icon: '🚀',
-            label: '急成長型',
+            label: { ja: '急成長型', en: 'On a Roll' },
             color: '#10b981',
             cond: () => trendPct > 25,
-            summary: `直近3ヶ月の売上が前の3ヶ月比で+${trendPct.toFixed(0)}%と好調です。この勢いを持続させる戦略が重要です。`,
-            strengths: ['売上トレンドが明確な上昇局面', '新商品や施策が市場に刺さっている'],
-            challenges: ['急成長は一時的なブーストの可能性', '成長を維持するためのコンテンツ供給が必要'],
-            actions: [
-                '⚡ 人気商品に関連する新作を素早くリリースしてモメンタムを活かす',
-                '📣 好調なうちにSNS告知・イベント参加で認知を拡大する',
-                '📊 どのチャネル・商品が成長の主因か分析し、その施策に集中投資する',
-            ],
+            summary: {
+                ja: `直近3ヶ月の売上が前の3ヶ月比で+${trendPct.toFixed(0)}%と好調です。この勢いを持続させる戦略が重要です。`,
+                en: `Your sales jumped +${trendPct.toFixed(0)}% compared to the previous 3 months — something is clearly working. The key now is to keep that momentum going.`,
+            },
+            strengths: {
+                ja: ['売上トレンドが明確な上昇局面', '新商品や施策が市場に刺さっている'],
+                en: ['You\'re in a clear upward trend', 'Something you\'ve done recently is resonating with the market'],
+            },
+            challenges: {
+                ja: ['急成長は一時的なブーストの可能性', '成長を維持するためのコンテンツ供給が必要'],
+                en: ['Fast growth can sometimes be a temporary spike, not a sustained trend', 'Maintaining this pace requires a steady flow of new content'],
+            },
+            actions: {
+                ja: [
+                    '⚡ 人気商品に関連する新作を素早くリリースしてモメンタムを活かす',
+                    '📣 好調なうちにSNS告知・イベント参加で認知を拡大する',
+                    '📊 どのチャネル・商品が成長の主因か分析し、その施策に集中投資する',
+                ],
+                en: [
+                    '⚡ Strike while the iron is hot — release follow-up products related to what\'s working',
+                    '📣 Use this good timing to expand your visibility through social posts and events',
+                    '📊 Dig into which channel or product is driving growth, then double down on what\'s working',
+                ],
+            },
         },
         {
             id: 'DECLINING',
             icon: '🔄',
-            label: '転換期型',
+            label: { ja: '転換期型', en: 'At a Crossroads' },
             color: '#64748b',
             cond: () => trendPct < -20,
-            summary: `直近3ヶ月の売上が前の3ヶ月比で-${Math.abs(trendPct).toFixed(0)}%となっています。商品・販路の見直しが必要な局面です。`,
-            strengths: ['過去に実績のある商品・販路がある', '改善の伸びしろが大きい'],
-            challenges: ['売上の下降トレンドが続いている', '主力商品の陳腐化や市場ニーズの変化の可能性'],
-            actions: [
-                '🔍 売上減少の原因（商品の古さ・競合出現・季節性）を各パネルで分析する',
-                '🎨 既存の人気商品をリニューアル・アップデートして再注目を集める',
-                '🆕 新カテゴリー・新ジャンルへのチャレンジで売上の軸を新たに作る',
-            ],
+            summary: {
+                ja: `直近3ヶ月の売上が前の3ヶ月比で-${Math.abs(trendPct).toFixed(0)}%となっています。商品・販路の見直しが必要な局面です。`,
+                en: `Sales dropped ${Math.abs(trendPct).toFixed(0)}% compared to the previous 3 months. This is a signal worth taking seriously — it may be time to refresh your strategy.`,
+            },
+            strengths: {
+                ja: ['過去に実績のある商品・販路がある', '改善の伸びしろが大きい'],
+                en: ['You have a track record of selling successfully', 'Plenty of room to turn things around with the right move'],
+            },
+            challenges: {
+                ja: ['売上の下降トレンドが続いている', '主力商品の陳腐化や市場ニーズの変化の可能性'],
+                en: ['Revenue is trending downward in recent months', 'Your catalog may be aging, or market tastes may have shifted'],
+            },
+            actions: {
+                ja: [
+                    '🔍 売上減少の原因（商品の古さ・競合出現・季節性）を各パネルで分析する',
+                    '🎨 既存の人気商品をリニューアル・アップデートして再注目を集める',
+                    '🆕 新カテゴリー・新ジャンルへのチャレンジで売上の軸を新たに作る',
+                ],
+                en: [
+                    '🔍 Use the other panels to identify why sales dropped — aging products? New competition? Seasonality?',
+                    '🎨 Give your most popular past products a refresh or a v2 to re-spark interest',
+                    '🆕 Try branching into a new category or style to open up a fresh revenue stream',
+                ],
+            },
         },
         {
             id: 'STABLE_DIVERSIFIED',
             icon: '🏛️',
-            label: '安定分散型',
+            label: { ja: '安定分散型', en: 'Well-Balanced' },
             color: '#3b82f6',
             cond: () => marketplacePct < 50 && top3Pct < 60 && activeCount >= 8,
-            summary: '複数のチャネルと商品群に売上が分散しており、リスクの低い安定した構成です。',
-            strengths: ['特定チャネル・商品への依存が低く外部変動に強い', '複数の収益源が安定基盤を作っている'],
-            challenges: ['際立ったヒットが生まれにくい', '注力点が分散して成長の加速がしにくい'],
-            actions: [
-                '💡 ロングテール商品の中から成長候補を選び、マーケティングを集中投下する',
-                '📈 最も伸びているチャネルに積極的に新作を投入する',
-                '🔍 商品ポートフォリオを整理し、A型（基盤）商品の比率をさらに高める',
-            ],
+            summary: {
+                ja: '複数のチャネルと商品群に売上が分散しており、リスクの低い安定した構成です。',
+                en: 'Your revenue is spread across multiple channels and products — a healthy, resilient setup. You\'re not overly dependent on any single thing.',
+            },
+            strengths: {
+                ja: ['特定チャネル・商品への依存が低く外部変動に強い', '複数の収益源が安定基盤を作っている'],
+                en: ['Low dependency on any single channel or product keeps you stable', 'Multiple income streams cushion you from sudden changes'],
+            },
+            challenges: {
+                ja: ['際立ったヒットが生まれにくい', '注力点が分散して成長の加速がしにくい'],
+                en: ['It can be harder to produce a breakout hit when focus is spread wide', 'Accelerating growth may require picking a direction and committing to it'],
+            },
+            actions: {
+                ja: [
+                    '💡 ロングテール商品の中から成長候補を選び、マーケティングを集中投下する',
+                    '📈 最も伸びているチャネルに積極的に新作を投入する',
+                    '🔍 商品ポートフォリオを整理し、A型（基盤）商品の比率をさらに高める',
+                ],
+                en: [
+                    '💡 Pick your strongest long-tail product and give it focused marketing attention',
+                    '📈 Push new releases into your best-performing channel to accelerate growth there',
+                    '🔍 Review your product portfolio and increase the share of steady "foundation" products',
+                ],
+            },
         },
         {
             id: 'SMALL_CONCENTRATED',
             icon: '💎',
-            label: '少数精鋭型',
+            label: { ja: '少数精鋭型', en: 'Boutique Focus' },
             color: '#06b6d4',
             cond: () => activeCount <= 5,
-            summary: `アクティブ商品が${activeCount}点と少数ですが、各商品の存在感が高い状態です。`,
-            strengths: ['各商品に集中してクオリティを高められる', '管理が容易でリリースサイクルが明確'],
-            challenges: ['商品数が少なく売上の変動リスクが高い', '主力商品のライフサイクル終了リスクが顕著'],
-            actions: [
-                '🌱 年間2〜4点の新商品リリースを目標に品揃えを徐々に増やす',
-                '🎨 既存商品のバリエーション展開で商品ラインを拡充する',
-                '📦 過去ヒット商品のリメイク・新バージョンで長期収益を確保する',
-            ],
+            summary: {
+                ja: `アクティブ商品が${activeCount}点と少数ですが、各商品の存在感が高い状態です。`,
+                en: `You have ${activeCount} active product${activeCount !== 1 ? 's' : ''} — a tight lineup where each item carries real weight. Quality over quantity is your approach.`,
+            },
+            strengths: {
+                ja: ['各商品に集中してクオリティを高められる', '管理が容易でリリースサイクルが明確'],
+                en: ['Focused catalog means you can pour quality into each product', 'Easy to manage and update your lineup as a solo or small creator'],
+            },
+            challenges: {
+                ja: ['商品数が少なく売上の変動リスクが高い', '主力商品のライフサイクル終了リスクが顕著'],
+                en: ['With few products, your income can swing sharply if one stops selling', 'When a top item reaches the end of its lifecycle, there\'s less to fall back on'],
+            },
+            actions: {
+                ja: [
+                    '🌱 年間2〜4点の新商品リリースを目標に品揃えを徐々に増やす',
+                    '🎨 既存商品のバリエーション展開で商品ラインを拡充する',
+                    '📦 過去ヒット商品のリメイク・新バージョンで長期収益を確保する',
+                ],
+                en: [
+                    '🌱 Aim to release 2–4 new products per year to gradually build your catalog',
+                    '🎨 Expand existing products with color or style variations to grow your listing count',
+                    '📦 Revisit past hits with a remake or updated version to extend their earning potential',
+                ],
+            },
         },
         {
             id: 'BALANCED',
             icon: '⚖️',
-            label: 'バランス型',
+            label: { ja: 'バランス型', en: 'Balanced' },
             color: '#6366f1',
             cond: () => true,
-            summary: '複数の指標が中庸な状態です。各軸を少しずつ強化することで全体的な向上が見込めます。',
-            strengths: ['特定の弱点が突出していない', '改善の方向性を自分で選択できる余地がある'],
-            challenges: ['際立った強みを作りにくい', 'まず注力すべき課題を絞り込む必要がある'],
-            actions: [
-                '📊 Marketplace依存率・ヒット集中度のうちリスクが高い方から改善に着手する',
-                '🆕 月1本のペースで新商品をリリースし、売上の幅を広げる',
-                '📣 SNS・イベント告知でインワールドの認知を高め、チャネルを多様化する',
-            ],
+            summary: {
+                ja: '複数の指標が中庸な状態です。各軸を少しずつ強化することで全体的な向上が見込めます。',
+                en: 'Your metrics are sitting comfortably in the middle — no glaring red flags, but also no standout strengths yet. Gradual improvement across all areas should yield solid results.',
+            },
+            strengths: {
+                ja: ['特定の弱点が突出していない', '改善の方向性を自分で選択できる余地がある'],
+                en: ['No critical weaknesses stand out', 'You have flexibility to choose where to improve first'],
+            },
+            challenges: {
+                ja: ['際立った強みを作りにくい', 'まず注力すべき課題を絞り込む必要がある'],
+                en: ['It can be hard to build a clear competitive edge from a balanced position', 'You\'ll benefit from picking a focus area and committing to it'],
+            },
+            actions: {
+                ja: [
+                    '📊 Marketplace依存率・ヒット集中度のうちリスクが高い方から改善に着手する',
+                    '🆕 月1本のペースで新商品をリリースし、売上の幅を広げる',
+                    '📣 SNS・イベント告知でインワールドの認知を高め、チャネルを多様化する',
+                ],
+                en: [
+                    '📊 Look at your Marketplace dependency and hit concentration — tackle whichever is higher first',
+                    '🆕 Try releasing a new product roughly once a month to expand your revenue base',
+                    '📣 Promote through social media and events to boost in-world discovery and diversify channels',
+                ],
+            },
         },
     ]
 

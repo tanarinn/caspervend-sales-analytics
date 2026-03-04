@@ -3,40 +3,45 @@
  * 総売上・取引件数・客単価・販売商品数を常時表示する
  */
 import { useMemo } from 'react'
-import { fmtLS, fmtNum, fmtPct, applyFilters } from '../utils/dataHelpers'
-
-const CARD_DEFS = [
-    {
-        key: 'gross',
-        label: '総売上（Gross）',
-        icon: '💴',
-        color: 'var(--accent-blue)',
-        format: fmtLS,
-    },
-    {
-        key: 'count',
-        label: '取引件数',
-        icon: '🧾',
-        color: 'var(--accent-green)',
-        format: (v) => `${fmtNum(v)} 件`,
-    },
-    {
-        key: 'avgPrice',
-        label: '客単価（平均）',
-        icon: '↗',
-        color: 'var(--accent-yellow)',
-        format: fmtLS,
-    },
-    {
-        key: 'products',
-        label: '販売商品数',
-        icon: '📦',
-        color: 'var(--accent-purple)',
-        format: (v) => `${fmtNum(v)} 商品`,
-    },
-]
+import { fmtLS, fmtNum, applyFilters } from '../utils/dataHelpers'
+import { useLang } from '../i18n/LanguageContext'
+import strings from '../i18n/strings'
 
 export default function KpiCards({ rows, filters }) {
+    const { lang } = useLang()
+    const t = (key) => strings[lang]?.[key] ?? strings['ja']?.[key] ?? key
+
+    const CARD_DEFS = [
+        {
+            key: 'gross',
+            label: t('kpiGross'),
+            icon: '💴',
+            color: 'var(--accent-blue)',
+            format: fmtLS,
+        },
+        {
+            key: 'count',
+            label: t('kpiCount'),
+            icon: '🧾',
+            color: 'var(--accent-green)',
+            format: (v) => lang === 'en' ? `${fmtNum(v)}` : `${fmtNum(v)} ${t('kpiCountUnit')}`,
+        },
+        {
+            key: 'avgPrice',
+            label: t('kpiAvgPrice'),
+            icon: '↗',
+            color: 'var(--accent-yellow)',
+            format: fmtLS,
+        },
+        {
+            key: 'products',
+            label: t('kpiProducts'),
+            icon: '📦',
+            color: 'var(--accent-purple)',
+            format: (v) => `${fmtNum(v)} ${t('kpiProductUnit')}`,
+        },
+    ]
+
     const kpi = useMemo(() => {
         if (!rows || rows.length === 0) return null
         const filtered = applyFilters(rows, filters)
